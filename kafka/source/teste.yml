@@ -1,0 +1,28 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: src-meu-topico
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: connect-v2
+spec:
+  class: io.confluent.connect.jdbc.JdbcSourceConnector
+  tasksMax: 1
+  config:
+    connection.url: "jdbc:oracle:thin:@//HOST:1521/SERVICE_NAME"
+    connection.user: ""
+    connection.password: ""
+    
+    # Configuração mais conservadora para teste
+    mode: bulk
+    table.whitelist: "SCHEMA.TABLE"
+    topic.prefix: "oracle-db"
+    poll.interval.ms: 60000  # 1 minuto
+    
+    # Configurações adicionais úteis
+    catalog.pattern: "SCHEMA"
+    numeric.precision.mapping: true
+    transforms: "addPrefix"
+    transforms.addPrefix.type: "org.apache.kafka.connect.transforms.RegexRouter"
+    transforms.addPrefix.regex: "(.*)"
+    transforms.addPrefix.replacement: "oracle-trans-$1"

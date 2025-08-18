@@ -1,0 +1,56 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: connect-v2
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+  labels:
+    app: connect-v2
+spec:
+  image: thisthiago/kafka-connect:3.9.3
+  version: 3.9.0
+  replicas: 1
+  bootstrapServers: dev-cluster-kafka-bootstrap:9092
+  # Let Strimzi manage the image version for compatibility
+  
+  config:
+    # Converter configurations
+    key.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    key.converter.schemas.enable: false
+    value.converter.schemas.enable: false
+    
+    # Internal converter configurations
+    internal.key.converter: org.apache.kafka.connect.json.JsonConverter
+    internal.value.converter: org.apache.kafka.connect.json.JsonConverter
+    internal.key.converter.schemas.enable: false
+    internal.value.converter.schemas.enable: false
+    
+    # Cluster identification and storage topics
+    group.id: connect-cluster-v2
+    offset.storage.topic: connect-cluster-offsets-v2
+    config.storage.topic: connect-cluster-configs-v2
+    status.storage.topic: connect-cluster-status-v2
+    
+    # Replication factors (keep at 1 for development)
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+    
+    # Connection and timeout settings
+    bootstrap.servers: dev-cluster-kafka-bootstrap:9092
+    connections.max.idle.ms: 540000
+    request.timeout.ms: 60000
+    
+    # Additional stability configurations
+    heartbeat.interval.ms: 3000
+    session.timeout.ms: 30000
+    scheduled.rebalance.max.delay.ms: 300000
+
+  resources:
+    requests:
+      memory: 3000Mi
+      cpu: "500m"
+    limits:
+      memory: 8000Mi
+      cpu: "4000m"
