@@ -1,6 +1,3 @@
-Perfeito! Aqui está um exemplo de **README.md** organizado, explicando passo a passo o setup do Kafka com Kind e Strimzi, incluindo a estrutura do seu projeto:
-
-````markdown
 # Kafka on Kubernetes with Kind and Strimzi 🚀
 
 Este projeto demonstra como criar um cluster Kafka local usando **Kind** (Kubernetes in Docker) e o operador **Strimzi**. Ele inclui brokers, Kafka Connect, UI e fontes de dados.
@@ -95,5 +92,5 @@ kind delete cluster --name kind-on-premise
 * `kafka/kafka-ui` é a interface visual para monitoramento do Kafka.
 * `kafka/source` contém definições de tópicos ou conectores de teste.
 
-```
+
 
