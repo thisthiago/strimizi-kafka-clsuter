@@ -54,3 +54,6 @@ spec:
     limits:
       memory: 8000Mi
       cpu: "4000m"
+  jvmOptions:
+    "-Xms": "1g"
+    "-Xmx": "6g"
