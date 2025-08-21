@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ksqldb-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ksqldb-server
+  template:
+    metadata:
+      labels:
+        app: ksqldb-server
+    spec:
+      containers:
+        - name: ksqldb-server
+          image: confluentinc/ksqldb-server:0.29.0
+          ports:
+            - containerPort: 8088
+          env:
+            - name: KSQL_CONFIG_DIR
+              value: "/etc/ksqldb"
+            - name: KSQL_BOOTSTRAP_SERVERS
+              value: "dev-cluster-kafka-bootstrap:9092"
+            - name: KSQL_LISTENERS
+              value: "http://0.0.0.0:8088"
+            - name: KSQL_KSQL_SERVICE_ID
+              value: "ksql_service_dev"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ksqldb-server
+spec:
+  type: ClusterIP
+  selector:
+    app: ksqldb-server
+  ports:
+    - name: http
+      port: 8088
+      targetPort: 8088
