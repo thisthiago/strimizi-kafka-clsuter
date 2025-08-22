@@ -1,0 +1,51 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  # O nome pode ser mais genérico se o tópico mudar
+  name: s3-sink-consumer
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: connect-v2
+spec:
+  class: io.confluent.connect.s3.S3SinkConnector
+  tasksMax: 5
+  config:
+
+    aws.access.key.id: ""
+    aws.secret.access.key: ""
+    s3.bucket.name: ""
+    s3.region: "us-east-1"
+
+    topics: "MEU_TOPICO"
+    topics.dir: "oracle/db/schema" 
+
+    format.class: "io.confluent.connect.s3.format.json.JsonFormat"
+    value.converter: "org.apache.kafka.connect.json.JsonConverter"
+    value.converter.schemas.enable: "false"
+    key.converter: "org.apache.kafka.connect.storage.StringConverter"
+
+    flush.size: "500000"
+    rotate.schedule.interval.ms: "600000" #10minutos
+    
+    # --- Particionamento por Campo ---
+    partitioner.class: "io.confluent.connect.storage.partitioner.TimeBasedPartitioner"
+    partition.duration.ms: "86400000"
+    
+    #Dizemos ao particionador para extrair a data de um campo do registro .
+    timestamp.extractor: "RecordField"
+    
+    #Especificamos o nome do campo que contém a data.
+    timestamp.field: "DATA_INSERT"
+    
+    #Informamos o formato da data DENTRO do campo DATA_INSERT. (Este deve ser o mesmo formato que o conector de origem está gerando).
+    timestamp.format: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+
+    #Definimos o formato do caminho de saída no S3 (formato Hive).
+    path.format: "'ano'=yyyy/'mes'=MM/'dia'=dd"
+    
+    #Configurações de localidade e fuso horário para garantir a data correta.
+    locale: "pt-BR"
+    timezone: "America/Sao_Paulo"
+    
+    storage.class: "io.confluent.connect.s3.storage.S3Storage"
+    schema.compatibility: "NONE"

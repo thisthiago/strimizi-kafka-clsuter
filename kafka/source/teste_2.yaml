@@ -1,0 +1,46 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: src-tpu-utilizacoes-bilhete-utb-${START_DATE}
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: connect-v2
+spec:
+  class: io.confluent.connect.jdbc.JdbcSourceConnector
+  tasksMax: 1
+  config:
+    connection.url: "jdbc:oracle:thin:@//HOST:1521/SERVICE_NAME"
+    connection.user: ""
+    connection.password: ""
+    mode: bulk
+    query: >
+      SELECT *
+      FROM SCHEMA.TABLE
+      WHERE DATA_INSERT >= DATE '${START_DATE}'
+      AND DATA_INSERT < DATE '${END_DATE}'
+    topic.prefix: "PREFIXO" 
+    fetch.size: 10000
+    poll.interval.ms: 86400000
+    
+    # --- Mapeamento de Tipos de Dados ---
+    # Garante que os campos NUMBER do Oracle sejam mapeados para os tipos numéricos corretos
+    numeric.mapping: "best_fit" 
+
+    # --- Conversores para gerar JSON limpo (sem schema embutido) ---
+    value.converter: "org.apache.kafka.connect.json.JsonConverter"
+    value.converter.schemas.enable: "false"
+    key.converter: "org.apache.kafka.connect.json.JsonConverter"
+    key.converter.schemas.enable: "false"
+
+
+    transforms: "RenameTopic,FormatTimestamp"
+    transforms.RenameTopic.type: "org.apache.kafka.connect.transforms.RegexRouter"
+    transforms.RenameTopic.regex: "(.*)"
+    transforms.RenameTopic.replacement: "$1_TPU_UTILIZACOES_BILHETE_UTB"
+    
+    #Converte os campos de data de timestamp para string formatada
+    transforms.FormatTimestamp.type: "org.apache.kafka.connect.transforms.TimestampConverter$Value"
+    transforms.FormatTimestamp.target.type: "string"
+    #Lista de todos os campos do tipo DATE da sua tabela
+    transforms.FormatTimestamp.field: "DATA_INSERT,DATA_REGISTRO,DATA_3"
+    transforms.FormatTimestamp.format: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
